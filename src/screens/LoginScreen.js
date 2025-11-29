@@ -12,6 +12,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api, setAuthToken } from "../api/api";
+
 import { ThemeContext } from "../theme/ThemeContext";
 import { getColors } from "../theme/colors";
 
@@ -26,90 +27,98 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      alert("Please fill all fields");
+      alert("Please enter email and password");
       return;
     }
 
-    setLoading(true);
     try {
+      setLoading(true);
       const res = await api.post("/api/auth/login", { email, password });
-      const token = res.data.token;
 
-      await AsyncStorage.setItem("token", token);
-      setAuthToken(token);
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "MainTabs" }],
-      });
+      const token = res.data?.token;
+      if (token) {
+        await AsyncStorage.setItem("token", token);
+        setAuthToken(token);
+        navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
+      } else {
+        alert("Invalid login response");
+      }
     } catch (err) {
-      console.log("LOGIN ERROR:", err.response?.data || err.message);
-      alert("Invalid email or password");
+      alert("Invalid Email or Password");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: Colors.background }]}>
-      <Text style={[styles.title, { color: Colors.textDark }]}>
-        Welcome Back
+      <Text style={[styles.header, { color: Colors.textDark }]}>
+        Welcome Back 👋
       </Text>
-      <Text style={[styles.subtitle, { color: Colors.textMedium }]}>
-        Login to continue
+      <Text style={[styles.sub, { color: Colors.textLight }]}>
+        Log in to continue your growth journey.
       </Text>
 
-      <TextInput
-        style={[
-          styles.input,
-          { backgroundColor: Colors.card, borderColor: Colors.border, color: Colors.textDark },
-        ]}
-        placeholder="Email"
-        placeholderTextColor={Colors.textLight}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
-
+      {/* Email */}
       <View
         style={[
-          styles.passwordRow,
+          styles.inputWrapper,
           { backgroundColor: Colors.card, borderColor: Colors.border },
         ]}
       >
+        <Feather name="mail" size={20} color={Colors.textMedium} />
         <TextInput
-          style={[styles.passwordInput, { color: Colors.textDark }]}
+          placeholder="Email"
+          placeholderTextColor={Colors.textLight}
+          style={[styles.input, { color: Colors.textDark }]}
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+      </View>
+
+      {/* Password */}
+      <View
+        style={[
+          styles.inputWrapper,
+          { backgroundColor: Colors.card, borderColor: Colors.border },
+        ]}
+      >
+        <Feather name="lock" size={20} color={Colors.textMedium} />
+        <TextInput
           placeholder="Password"
           placeholderTextColor={Colors.textLight}
+          style={[styles.input, { color: Colors.textDark }]}
           secureTextEntry={!showPass}
           value={password}
           onChangeText={setPassword}
         />
         <TouchableOpacity onPress={() => setShowPass(!showPass)}>
           <Feather
-            name={showPass ? "eye" : "eye-off"}
-            size={22}
+            name={showPass ? "eye-off" : "eye"}
+            size={20}
             color={Colors.textMedium}
           />
         </TouchableOpacity>
       </View>
 
+      {/* Login Button */}
       <TouchableOpacity
         style={[styles.button, { backgroundColor: Colors.primary }]}
         onPress={handleLogin}
+        disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="white" />
+          <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Log In</Text>
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={{ marginTop: 16 }}
-        onPress={() => navigation.navigate("Register")}
-      >
+      {/* Register redirect */}
+      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={[styles.link, { color: Colors.primary }]}>
-          Don't have an account? Register
+          Don't have an account? Sign Up →
         </Text>
       </TouchableOpacity>
     </View>
@@ -117,41 +126,40 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, paddingTop: 80 },
-  title: { fontSize: 32, fontWeight: "700" },
-  subtitle: { marginTop: 6, marginBottom: 26, fontSize: 16 },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-    marginBottom: 16,
-  },
-  passwordRow: {
+  container: { flex: 1, padding: 24, paddingTop: 120 },
+  header: { fontSize: 32, fontWeight: "800" },
+  sub: { fontSize: 14, marginTop: 8 },
+
+  inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    marginBottom: 22,
+    padding: 14,
+    borderRadius: 14,
+    marginTop: 18,
   },
-  passwordInput: {
+  input: {
     flex: 1,
-    paddingVertical: 10,
     fontSize: 15,
+    marginLeft: 10,
   },
+
   button: {
-    borderRadius: 12,
+    marginTop: 26,
     paddingVertical: 14,
+    borderRadius: 14,
   },
   buttonText: {
-    textAlign: "center",
     color: "white",
-    fontSize: 17,
-    fontWeight: "600",
-  },
-  link: {
     textAlign: "center",
-    fontSize: 15,
+    fontSize: 17,
+    fontWeight: "700",
+  },
+
+  link: {
+    marginTop: 20,
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

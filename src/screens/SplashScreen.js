@@ -1,73 +1,58 @@
 // src/screens/SplashScreen.js
 
-import React, { useEffect, useRef, useContext } from "react";
-import { Text, StyleSheet, Animated } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setAuthToken } from "../api/api";
-import { ThemeContext } from "../theme/ThemeContext";
-import { getColors } from "../theme/colors";
+import React, { useEffect, useRef } from "react";
+import { View, Text, StyleSheet, Animated } from "react-native";
 
 export default function SplashScreen({ navigation }) {
   const fade = useRef(new Animated.Value(0)).current;
-  const { darkMode } = useContext(ThemeContext);
-  const Colors = getColors(darkMode);
+  const scale = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
-    Animated.timing(fade, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-
-    checkLoginStatus();
-  }, []);
-
-  const checkLoginStatus = async () => {
-    const token = await AsyncStorage.getItem("token");
-
-    setTimeout(() => {
-      if (token) {
-        setAuthToken(token);
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "MainTabs" }],
-        });
-      } else {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Login" }],
-        });
-      }
-    }, 1500);
-  };
+    Animated.parallel([
+      Animated.timing(fade, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        speed: 0.6,
+        bounciness: 10,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Navigate only after animation finishes
+      navigation.replace("Login");
+    });
+  }, [fade, scale, navigation]);
 
   return (
-    <LinearGradient
-      colors={darkMode ? ["#000000", "#050714"] : ["#0d1b3d", "#1976d2"]}
-      style={styles.container}
-    >
-      <Animated.Text style={[styles.logo, { opacity: fade }]}>
-        SkillTrack
-      </Animated.Text>
-      <Animated.Text style={[styles.subtitle, { opacity: fade }]}>
-        Track. Grow. Achieve.
-      </Animated.Text>
-    </LinearGradient>
+    <View style={styles.container}>
+      <Animated.View style={{ opacity: fade, transform: [{ scale }] }}>
+        <Text style={styles.logo}>SkillTrack</Text>
+        <Text style={styles.tagline}>Build. Improve. Achieve.</Text>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: {
+    flex: 1,
+    backgroundColor: "#020617", // dark navy, premium feel
+    justifyContent: "center",
+    alignItems: "center",
+  },
   logo: {
     fontSize: 42,
-    fontWeight: "700",
-    color: "white",
-    letterSpacing: 1.5,
+    fontWeight: "900",
+    letterSpacing: 1,
+    color: "#4A90E2", // brand blue
   },
-  subtitle: {
+  tagline: {
+    fontSize: 14,
     marginTop: 8,
-    fontSize: 16,
-    color: "#d0e4ff",
+    letterSpacing: 0.5,
+    color: "#9ca3af",
   },
 });

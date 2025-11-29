@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { api } from "../api/api";
@@ -16,6 +18,7 @@ import { getColors } from "../theme/colors";
 
 export default function UpdateSkillScreen({ navigation, route }) {
   const { skill } = route.params;
+
   const { darkMode } = useContext(ThemeContext);
   const Colors = getColors(darkMode);
 
@@ -30,134 +33,177 @@ export default function UpdateSkillScreen({ navigation, route }) {
     }
 
     try {
-      await api.put(`/api/skills/${skill.id}`, {
-        name,
-        category,
-        level,
-      });
+      await api.put(`/api/skills/${skill.id}`, { name, category, level });
       Alert.alert("Success", "Skill updated.");
       navigation.goBack();
     } catch (err) {
+      console.log("UPDATE SKILL ERROR:", err.response?.data || err.message);
       Alert.alert("Error", "Failed to update skill.");
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="arrow-left" size={24} color={Colors.textDark} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: Colors.textDark }]}>
-          Edit Skill
-        </Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <View style={[styles.container, { backgroundColor: Colors.background }]}>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Feather name="arrow-left" size={24} color={Colors.textDark} />
+          </TouchableOpacity>
 
-      <TextInput
-        style={[
-          styles.input,
-          { backgroundColor: Colors.card, borderColor: Colors.border, color: Colors.textDark },
-        ]}
-        value={name}
-        onChangeText={setName}
-        placeholder="Skill Name"
-        placeholderTextColor={Colors.textLight}
-      />
+          <Text style={[styles.headerTitle, { color: Colors.textDark }]}>
+            Edit Skill
+          </Text>
 
-      <TextInput
-        style={[
-          styles.input,
-          { backgroundColor: Colors.card, borderColor: Colors.border, color: Colors.textDark },
-        ]}
-        value={category}
-        onChangeText={setCategory}
-        placeholder="Category"
-        placeholderTextColor={Colors.textLight}
-      />
+          <View style={{ width: 24 }} />
+        </View>
 
-      <Text style={[styles.label, { color: Colors.textMedium }]}>
-        Level
-      </Text>
-
-      <View style={styles.levelRow}>
-        {[1, 2, 3].map((lvl) => (
-          <TouchableOpacity
-            key={lvl}
+        {/* Card */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: Colors.card, borderColor: Colors.border },
+          ]}
+        >
+          <Text style={[styles.label, { color: Colors.textMedium }]}>
+            Skill Name
+          </Text>
+          <TextInput
             style={[
-              styles.levelButton,
+              styles.input,
               {
-                backgroundColor:
-                  level === lvl ? Colors.primary : Colors.card,
-                borderColor:
-                  level === lvl ? Colors.primary : Colors.border,
+                backgroundColor: Colors.card,
+                borderColor: Colors.border,
+                color: Colors.textDark,
               },
             ]}
-            onPress={() => setLevel(lvl)}
-          >
-            <Text
-              style={{
-                color: level === lvl ? "white" : Colors.textDark,
-                fontWeight: "600",
-              }}
-            >
-              {lvl === 1 ? "Beginner" : lvl === 2 ? "Intermediate" : "Advanced"}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            value={name}
+            onChangeText={setName}
+            placeholder="Skill Name"
+            placeholderTextColor={Colors.textLight}
+          />
 
-      <TouchableOpacity
-        style={[styles.saveButton, { backgroundColor: Colors.primary }]}
-        onPress={handleUpdate}
-      >
-        <Text style={styles.saveText}>Save Changes</Text>
-      </TouchableOpacity>
-    </View>
+          <Text style={[styles.label, { color: Colors.textMedium }]}>
+            Category
+          </Text>
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: Colors.card,
+                borderColor: Colors.border,
+                color: Colors.textDark,
+              },
+            ]}
+            value={category}
+            onChangeText={setCategory}
+            placeholder="Category"
+            placeholderTextColor={Colors.textLight}
+          />
+
+          <Text style={[styles.label, { color: Colors.textMedium }]}>
+            Level
+          </Text>
+
+          <View style={styles.levelRow}>
+            {[1, 2, 3].map((lvl) => (
+              <TouchableOpacity
+                key={lvl}
+                style={[
+                  styles.levelButton,
+                  {
+                    backgroundColor:
+                      level === lvl ? Colors.primary : Colors.card,
+                    borderColor:
+                      level === lvl ? Colors.primary : Colors.border,
+                  },
+                ]}
+                onPress={() => setLevel(lvl)}
+              >
+                <Text
+                  style={[
+                    styles.levelText,
+                    { color: level === lvl ? "white" : Colors.textDark },
+                  ]}
+                >
+                  {lvl === 1
+                    ? "Beginner"
+                    : lvl === 2
+                    ? "Intermediate"
+                    : "Advanced"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Save Button */}
+        <TouchableOpacity
+          style={[styles.saveButton, { backgroundColor: Colors.primary }]}
+          onPress={handleUpdate}
+        >
+          <Text style={styles.saveText}>Save Changes</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 22, paddingTop: 60 },
+
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
     justifyContent: "space-between",
   },
-  headerTitle: { fontSize: 20, fontWeight: "700" },
+  headerTitle: { fontSize: 22, fontWeight: "700" },
+
+  card: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 18,
+    marginBottom: 20,
+  },
+
+  label: { fontSize: 14, marginBottom: 6, fontWeight: "600" },
 
   input: {
     borderWidth: 1,
     borderRadius: 12,
     padding: 12,
     fontSize: 15,
-    marginBottom: 14,
+    marginBottom: 16,
   },
-  label: { fontSize: 14, marginBottom: 6 },
 
   levelRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 22,
+    marginTop: 8,
   },
   levelButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
+    borderRadius: 14,
+    paddingVertical: 12,
     alignItems: "center",
     marginRight: 8,
   },
+  levelText: { fontSize: 14, fontWeight: "600" },
+
   saveButton: {
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 14,
+    paddingVertical: 15,
     marginTop: 10,
   },
   saveText: {
     textAlign: "center",
     color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 17,
+    fontWeight: "700",
   },
 });

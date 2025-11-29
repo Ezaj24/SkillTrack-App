@@ -34,7 +34,7 @@ export default function ProfileScreen({ navigation }) {
       setUser(res.data);
       setNameDraft(res.data.userName);
       setEmailDraft(res.data.email);
-    } catch (err) {
+    } catch {
       Alert.alert("Error", "Failed to load profile");
     }
   };
@@ -61,12 +61,15 @@ export default function ProfileScreen({ navigation }) {
 
     try {
       setSaving(true);
+
       await api.put("/api/user/update", {
         userName: nameDraft,
         email: emailDraft,
       });
+
       setUser({ ...user, userName: nameDraft, email: emailDraft });
       setEditMode(false);
+
       Alert.alert("Success", "Profile updated");
     } catch {
       Alert.alert("Error", "Could not update profile");
@@ -81,28 +84,33 @@ export default function ProfileScreen({ navigation }) {
       contentContainerStyle={{ paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={[styles.title, { color: Colors.textDark }]}>Profile</Text>
+      {/* Title */}
+      <Text style={[styles.title, { color: Colors.textDark }]}>
+        Profile
+      </Text>
 
-      {/* Profile card */}
+      {/* PROFILE HEADER CARD */}
       <View
         style={[
-          styles.card,
+          styles.profileCard,
           { backgroundColor: Colors.card, borderColor: Colors.border },
         ]}
       >
-        <View style={styles.userRow}>
+        <View style={styles.headerRow}>
+          {/* Avatar */}
           <View
             style={[
               styles.avatar,
-              { backgroundColor: darkMode ? "#1e1e1e" : "#e2edff" },
+              { backgroundColor: darkMode ? "#1e1e1e" : "#e7efff" },
             ]}
           >
-            <Feather name="user" size={26} color={Colors.primary} />
+            <Feather name="user" size={30} color={Colors.primary} />
           </View>
 
+          {/* View or Edit Mode */}
           {!editMode ? (
             <View style={{ flex: 1 }}>
-              <Text style={[styles.userText, { color: Colors.textDark }]}>
+              <Text style={[styles.nameText, { color: Colors.textDark }]}>
                 {user?.userName}
               </Text>
               <Text style={[styles.emailText, { color: Colors.textLight }]}>
@@ -114,7 +122,11 @@ export default function ProfileScreen({ navigation }) {
               <TextInput
                 style={[
                   styles.input,
-                  { borderColor: Colors.border, color: Colors.textDark },
+                  {
+                    borderColor: Colors.border,
+                    backgroundColor: Colors.card,
+                    color: Colors.textDark,
+                  },
                 ]}
                 placeholder="Name"
                 placeholderTextColor={Colors.textLight}
@@ -124,7 +136,11 @@ export default function ProfileScreen({ navigation }) {
               <TextInput
                 style={[
                   styles.input,
-                  { borderColor: Colors.border, color: Colors.textDark },
+                  {
+                    borderColor: Colors.border,
+                    backgroundColor: Colors.card,
+                    color: Colors.textDark,
+                  },
                 ]}
                 placeholder="Email"
                 placeholderTextColor={Colors.textLight}
@@ -142,21 +158,25 @@ export default function ProfileScreen({ navigation }) {
           )}
         </View>
 
+        {/* Save / Cancel */}
         {editMode && (
-          <View style={styles.editButtonsRow}>
+          <View style={styles.editRow}>
             <TouchableOpacity
-              style={[styles.smallButton, { backgroundColor: Colors.primary }]}
+              style={[
+                styles.saveButton,
+                { backgroundColor: Colors.primary },
+              ]}
               onPress={saveProfile}
             >
-              <Text style={styles.smallButtonText}>
+              <Text style={styles.saveText}>
                 {saving ? "Saving..." : "Save"}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
-                styles.smallButton,
-                { backgroundColor: darkMode ? "#333" : "#e0e0e0" },
+                styles.cancelButton,
+                { backgroundColor: Colors.card, borderColor: Colors.border },
               ]}
               onPress={() => {
                 setEditMode(false);
@@ -166,8 +186,8 @@ export default function ProfileScreen({ navigation }) {
             >
               <Text
                 style={[
-                  styles.smallButtonText,
-                  { color: darkMode ? Colors.textDark : "#111" },
+                  styles.cancelText,
+                  { color: Colors.textDark },
                 ]}
               >
                 Cancel
@@ -177,34 +197,32 @@ export default function ProfileScreen({ navigation }) {
         )}
       </View>
 
-      {/* Settings */}
+      {/* SETTINGS SECTION */}
       <Text style={[styles.sectionLabel, { color: Colors.textLight }]}>
         SETTINGS
       </Text>
-
       <View
         style={[
           styles.card,
           { backgroundColor: Colors.card, borderColor: Colors.border },
         ]}
       >
-        <View style={styles.rowButton}>
+        <View style={styles.row}>
           <Text style={[styles.rowText, { color: Colors.textDark }]}>
             Dark Mode
           </Text>
           <Switch
             value={darkMode}
             onValueChange={toggleTheme}
-            thumbColor={darkMode ? Colors.primary : "#f4f4f4"}
+            thumbColor={darkMode ? Colors.primary : "#ffffff"}
           />
         </View>
       </View>
 
-      {/* App info */}
+      {/* APP INFO SECTION */}
       <Text style={[styles.sectionLabel, { color: Colors.textLight }]}>
-        APP
+        APP INFORMATION
       </Text>
-
       <View
         style={[
           styles.card,
@@ -212,13 +230,8 @@ export default function ProfileScreen({ navigation }) {
         ]}
       >
         <TouchableOpacity
-          style={styles.rowButton}
-          onPress={() =>
-            Alert.alert(
-              "Terms & Conditions",
-              "Demo SkillTrack app for portfolio purposes. In a real app this would link to full legal terms."
-            )
-          }
+          style={styles.row}
+          onPress={() => Alert.alert("Terms & Conditions", "Demo version.")}
         >
           <Text style={[styles.rowText, { color: Colors.textDark }]}>
             Terms & Conditions
@@ -229,13 +242,8 @@ export default function ProfileScreen({ navigation }) {
         <View style={[styles.divider, { backgroundColor: Colors.border }]} />
 
         <TouchableOpacity
-          style={styles.rowButton}
-          onPress={() =>
-            Alert.alert(
-              "Privacy Policy",
-              "Your data is used only inside this demo app and not shared."
-            )
-          }
+          style={styles.row}
+          onPress={() => Alert.alert("Privacy Policy", "Data stays local.")}
         >
           <Text style={[styles.rowText, { color: Colors.textDark }]}>
             Privacy Policy
@@ -245,7 +253,7 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={[styles.divider, { backgroundColor: Colors.border }]} />
 
-        <View style={styles.rowButton}>
+        <View style={styles.row}>
           <Text style={[styles.rowText, { color: Colors.textDark }]}>
             App Version
           </Text>
@@ -255,7 +263,7 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Logout fully visible now */}
+      {/* LOGOUT BUTTON */}
       <TouchableOpacity
         style={[styles.logoutButton, { backgroundColor: Colors.danger }]}
         onPress={logout}
@@ -266,9 +274,74 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
+/* ---------------------- STYLES ---------------------- */
+
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 22, paddingTop: 70 },
+
   title: { fontSize: 32, fontWeight: "700", marginBottom: 20 },
+
+  profileCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 18,
+    marginBottom: 20,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+
+  nameText: { fontSize: 20, fontWeight: "700" },
+  emailText: { fontSize: 13, marginTop: 4 },
+
+  input: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 14,
+    marginBottom: 10,
+  },
+
+  editRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 14,
+  },
+
+  saveButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  saveText: { color: "white", fontSize: 15, fontWeight: "600" },
+
+  cancelButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginLeft: 10,
+  },
+  cancelText: { fontSize: 15, fontWeight: "600" },
+
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginLeft: 4,
+    marginTop: 12,
+  },
 
   card: {
     borderRadius: 18,
@@ -276,56 +349,11 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 18,
   },
-  userRow: { flexDirection: "row", alignItems: "center" },
-  avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 14,
-  },
-  userText: { fontSize: 18, fontWeight: "700" },
-  emailText: { fontSize: 13 },
 
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 14,
-    marginBottom: 8,
-  },
-
-  editButtonsRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 10,
-  },
-  smallButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginLeft: 8,
-  },
-  smallButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 8,
-    marginLeft: 4,
-    marginTop: 10,
-  },
-
-  rowButton: {
+  row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 16,
+    paddingVertical: 12,
     alignItems: "center",
   },
   rowText: { fontSize: 16 },
@@ -337,6 +365,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 10,
   },
+
   logoutText: {
     textAlign: "center",
     color: "white",

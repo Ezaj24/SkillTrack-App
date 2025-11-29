@@ -15,8 +15,7 @@ import { api } from "../api/api";
 
 import { ThemeContext } from "../theme/ThemeContext";
 import { getColors } from "../theme/colors";
-
-import { getQuoteOfTheDay } from "../utils/QuoteManager";   // ⭐ ADDED
+import { getQuoteOfTheDay } from "../utils/QuoteManager";
 
 export default function HomeScreen({ navigation }) {
   const { darkMode } = useContext(ThemeContext);
@@ -27,9 +26,8 @@ export default function HomeScreen({ navigation }) {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fade = useRef(new Animated.Value(0)).current;
-
-  const quote = getQuoteOfTheDay();  // ⭐ ADDED
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  const quote = getQuoteOfTheDay();
 
   const loadData = async () => {
     try {
@@ -45,9 +43,9 @@ export default function HomeScreen({ navigation }) {
       console.log("HOME LOAD ERROR:", err.message);
     } finally {
       setLoading(false);
-      Animated.timing(fade, {
+      Animated.timing(fadeIn, {
         toValue: 1,
-        duration: 500,
+        duration: 550,
         useNativeDriver: true,
       }).start();
     }
@@ -60,9 +58,7 @@ export default function HomeScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View
-        style={[styles.loading, { backgroundColor: Colors.background }]}
-      >
+      <View style={[styles.loading, { backgroundColor: Colors.background }]}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
@@ -85,114 +81,81 @@ export default function HomeScreen({ navigation }) {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: Colors.background }]}
-      contentContainerStyle={{ paddingBottom: 120 }}
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 120 }}
     >
-      <Animated.View style={{ opacity: fade }}>
-        
-        {/* GREETING */}
+      <Animated.View style={{ opacity: fadeIn }}>
+        {/* Greeting */}
         <Text style={[styles.greeting, { color: Colors.textDark }]}>
           Hi {firstName} 👋
         </Text>
-
-        <Text style={[styles.dashboardTitle, { color: Colors.textMedium }]}>
-          Dashboard
+        <Text style={[styles.subTitle, { color: Colors.textMedium }]}>
+          Track. Improve. Achieve.
         </Text>
 
-        {/* STATS */}
+        {/* Stats */}
         <View style={styles.statsRow}>
-          <TouchableOpacity
-            style={[
-              styles.statCard,
-              { backgroundColor: Colors.card, borderColor: Colors.border },
-            ]}
-            onPress={() => navigation.navigate("Skills")}
-          >
-            <Feather name="layers" size={22} color={Colors.primary} />
-            <Text style={[styles.statNumber, { color: Colors.textDark }]}>
-              {totalSkills}
-            </Text>
-            <Text style={[styles.statLabel, { color: Colors.textLight }]}>
-              Skills
-            </Text>
-          </TouchableOpacity>
+          <StatCard
+            icon="layers"
+            label="Skills"
+            value={totalSkills}
+            color={Colors.primary}
+            Colors={Colors}
+            navigation={navigation}
+            screen="Skills"
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.statCard,
-              { backgroundColor: Colors.card, borderColor: Colors.border },
-            ]}
-            onPress={() => navigation.navigate("Goals")}
-          >
-            <Feather name="target" size={22} color={Colors.success} />
-            <Text style={[styles.statNumber, { color: Colors.textDark }]}>
-              {totalGoals}
-            </Text>
-            <Text style={[styles.statLabel, { color: Colors.textLight }]}>
-              Goals
-            </Text>
-          </TouchableOpacity>
+          <StatCard
+            icon="target"
+            label="Goals"
+            value={totalGoals}
+            color={Colors.success}
+            Colors={Colors}
+            navigation={navigation}
+            screen="Goals"
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.statCard,
-              { backgroundColor: Colors.card, borderColor: Colors.border },
-            ]}
-            onPress={() => navigation.navigate("Goals")}
-          >
-            <Feather name="alert-circle" size={22} color={Colors.danger} />
-            <Text style={[styles.statNumber, { color: Colors.textDark }]}>
-              {goalsDueSoon}
-            </Text>
-            <Text style={[styles.statLabel, { color: Colors.textLight }]}>
-              Due Soon
-            </Text>
-          </TouchableOpacity>
+          <StatCard
+            icon="alert-circle"
+            label="Due Soon"
+            value={goalsDueSoon}
+            color={Colors.danger}
+            Colors={Colors}
+            navigation={navigation}
+            screen="Goals"
+          />
         </View>
 
-        {/* QUICK ACTIONS */}
-        <Text style={[styles.sectionTitle, { color: Colors.textDark }]}>
+        {/* Quick actions */}
+        <Text style={[styles.sectionHeader, { color: Colors.textDark }]}>
           Quick Actions
         </Text>
 
         <View style={styles.quickRow}>
-          <TouchableOpacity
-            style={[
-              styles.quickButton,
-              { backgroundColor: Colors.primary },
-            ]}
+          <QuickButton
+            icon="plus"
+            text="Add Skill"
+            bg={Colors.primary}
             onPress={() => navigation.navigate("AddSkill")}
-          >
-            <Feather name="plus" size={20} color="white" />
-            <Text style={styles.quickText}>Add Skill</Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.quickButton,
-              { backgroundColor: Colors.success },
-            ]}
+          <QuickButton
+            icon="target"
+            text="Add Goal"
+            bg={Colors.success}
             onPress={() => navigation.navigate("AddGoal")}
-          >
-            <Feather name="target" size={20} color="white" />
-            <Text style={styles.quickText}>Add Goal</Text>
-          </TouchableOpacity>
+          />
         </View>
 
-        {/* ⭐ QUOTE OF THE DAY ⭐ */}
+        {/* Quote */}
         <View
           style={[
             styles.quoteCard,
             { backgroundColor: Colors.card, borderColor: Colors.border },
           ]}
         >
-          <Feather
-            name="zap"
-            size={20}
-            color={Colors.primary}
-            style={{ marginRight: 8 }}
-          />
-          <View style={{ flex: 1 }}>
+          <Feather name="zap" size={20} color={Colors.primary} />
+          <View style={{ marginLeft: 10, flex: 1 }}>
             <Text style={[styles.quoteText, { color: Colors.textDark }]}>
               “{quote.text}”
             </Text>
@@ -202,33 +165,32 @@ export default function HomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* UPCOMING GOALS */}
+        {/* Upcoming goals */}
         {upcomingGoals.length > 0 && (
           <>
-            <Text style={[styles.sectionTitle, { color: Colors.textDark }]}>
+            <Text style={[styles.sectionHeader, { color: Colors.textDark }]}>
               Upcoming Goals
             </Text>
 
             {upcomingGoals.map((g) => (
               <TouchableOpacity
                 key={g.id}
-                onPress={() =>
-                  navigation.navigate("UpdateGoal", { goal: g })  // ⭐ NOW CLICKABLE
-                }
                 style={[
-                  styles.goalItem,
+                  styles.goalCard,
                   { backgroundColor: Colors.card, borderColor: Colors.border },
                 ]}
+                onPress={() => navigation.navigate("UpdateGoal", { goal: g })}
               >
                 <View>
                   <Text style={[styles.goalTitle, { color: Colors.textDark }]}>
                     {g.title}
                   </Text>
-                  <Text style={[styles.goalDate, { color: Colors.textLight }]}>
+                  <Text
+                    style={[styles.goalDate, { color: Colors.textMedium }]}
+                  >
                     {new Date(g.targetDate).toDateString()}
                   </Text>
                 </View>
-
                 <Feather
                   name="chevron-right"
                   size={20}
@@ -243,17 +205,35 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
+/* COMPONENTS */
+const StatCard = ({ icon, label, value, color, Colors, navigation, screen }) => (
+  <TouchableOpacity
+    style={[
+      styles.statCard,
+      { backgroundColor: Colors.card, borderColor: Colors.border },
+    ]}
+    onPress={() => navigation.navigate(screen)}
+  >
+    <Feather name={icon} size={22} color={color} />
+    <Text style={[styles.statValue, { color: Colors.textDark }]}>{value}</Text>
+    <Text style={[styles.statLabel, { color: Colors.textLight }]}>{label}</Text>
+  </TouchableOpacity>
+);
+
+const QuickButton = ({ icon, text, bg, onPress }) => (
+  <TouchableOpacity style={[styles.quickBtn, { backgroundColor: bg }]} onPress={onPress}>
+    <Feather name={icon} size={18} color="white" />
+    <Text style={styles.quickBtnText}>{text}</Text>
+  </TouchableOpacity>
+);
+
+/* STYLES */
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 22, paddingTop: 70 },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   greeting: { fontSize: 28, fontWeight: "700" },
-  dashboardTitle: {
-    fontSize: 16,
-    marginTop: 4,
-    marginBottom: 20,
-    fontWeight: "500",
-  },
+  subTitle: { fontSize: 15, marginTop: 4, marginBottom: 20 },
 
   statsRow: {
     flexDirection: "row",
@@ -262,58 +242,50 @@ const styles = StyleSheet.create({
   statCard: {
     width: "31%",
     padding: 14,
-    borderRadius: 16,
     borderWidth: 1,
+    borderRadius: 16,
     alignItems: "center",
   },
-  statNumber: { fontSize: 18, fontWeight: "700", marginTop: 6 },
-  statLabel: { fontSize: 12 },
+  statValue: { fontSize: 18, fontWeight: "700", marginTop: 6 },
+  statLabel: { fontSize: 12, marginTop: 2 },
 
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginTop: 26,
-    marginBottom: 10,
-  },
+  sectionHeader: { fontSize: 20, fontWeight: "700", marginTop: 26, marginBottom: 12 },
 
-  quickRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  quickButton: {
+  quickRow: { flexDirection: "row", justifyContent: "space-between" },
+  quickBtn: {
     width: "48%",
+    paddingVertical: 13,
     borderRadius: 14,
-    paddingVertical: 14,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
   },
-  quickText: {
+  quickBtnText: {
     color: "white",
     fontSize: 15,
-    fontWeight: "600",
     marginLeft: 6,
+    fontWeight: "600",
   },
 
   quoteCard: {
     flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
     borderWidth: 1,
-    padding: 14,
+    padding: 16,
+    borderRadius: 16,
     marginTop: 26,
+    alignItems: "center",
   },
   quoteText: { fontSize: 14, fontWeight: "600" },
   quoteAuthor: { fontSize: 12, marginTop: 4 },
 
-  goalItem: {
+  goalCard: {
+    padding: 14,
+    borderWidth: 1,
+    borderRadius: 14,
+    marginBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 14,
-    marginBottom: 8,
   },
   goalTitle: { fontSize: 15, fontWeight: "600" },
   goalDate: { fontSize: 12, marginTop: 2 },

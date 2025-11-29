@@ -1,6 +1,6 @@
 // src/screens/SkillsScreen.js
 
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Animated,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { api } from "../api/api";
@@ -29,6 +30,8 @@ export default function SkillsScreen({ navigation }) {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fade = useRef(new Animated.Value(0)).current;
+
   const fetchSkills = async () => {
     try {
       const res = await api.get("/api/skills");
@@ -37,10 +40,16 @@ export default function SkillsScreen({ navigation }) {
       console.log("FETCH SKILLS ERROR:", err.response?.data || err.message);
     }
     setLoading(false);
+
+    Animated.timing(fade, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   };
 
   const deleteSkill = (id) => {
-    Alert.alert("Delete Skill", "Are you sure?", [
+    Alert.alert("Delete Skill", "Are you sure you want to delete this?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
@@ -50,7 +59,7 @@ export default function SkillsScreen({ navigation }) {
             await api.delete(`/api/skills/${id}`);
             fetchSkills();
           } catch {
-            Alert.alert("Error", "Could not delete skill");
+            Alert.alert("Error", "Could not delete the skill");
           }
         },
       },
@@ -58,13 +67,12 @@ export default function SkillsScreen({ navigation }) {
   };
 
   useEffect(() => {
-    const unsub = navigation.addListener("focus", fetchSkills);
-    return unsub;
+    const sub = navigation.addListener("focus", fetchSkills);
+    return sub;
   }, [navigation]);
 
   const grouped = skills.reduce((acc, skill) => {
-    const raw = (skill.category || "Uncategorized").trim().toLowerCase();
-    const key = raw || "uncategorized";
+    const key = (skill.category || "uncategorized").trim().toLowerCase();
     if (!acc[key]) acc[key] = [];
     acc[key].push(skill);
     return acc;
@@ -98,107 +106,125 @@ export default function SkillsScreen({ navigation }) {
       contentContainerStyle={{ paddingBottom: 120 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: Colors.textDark }]}>Skills</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AddSkill")}>
-          <Feather name="plus-circle" size={28} color={Colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <Animated.View style={{ opacity: fade }}>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <Text style={[styles.title, { color: Colors.textDark }]}>
+            Skills
+          </Text>
 
-      {skills.length === 0 && (
-        <Text style={[styles.empty, { color: Colors.textMedium }]}>
-          No skills added yet. Start by adding one.
-        </Text>
-      )}
+          <TouchableOpacity onPress={() => navigation.navigate("AddSkill")}>
+            <Feather name="plus-circle" size={28} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
 
-      {categories.map((key) => {
-        const label = key === "uncategorized" ? "Uncategorized" : toTitleCase(key);
-        return (
-          <View key={key} style={styles.categoryBlock}>
-            <Text style={[styles.categoryTitle, { color: Colors.textMedium }]}>
-              {label}
-            </Text>
+        {skills.length === 0 && (
+          <Text style={[styles.empty, { color: Colors.textMedium }]}>
+            No skills added yet.
+          </Text>
+        )}
 
-            {grouped[key].map((skill) => (
-              <View
-                key={skill.id}
-                style={[
-                  styles.card,
-                  { backgroundColor: Colors.card, borderColor: Colors.border },
-                ]}
+        {/* Category groups */}
+        {categories.map((key) => {
+          const label =
+            key === "uncategorized" ? "Uncategorized" : toTitleCase(key);
+
+          return (
+            <View key={key} style={styles.categoryBlock}>
+              <Text
+                style={[styles.categoryTitle, { color: Colors.textMedium }]}
               >
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={[styles.skillName, { color: Colors.textDark }]}
-                  >
-                    {skill.name}
-                  </Text>
+                {label}
+              </Text>
 
-                  <View style={styles.tagRow}>
-                    <View
-                      style={[
-                        styles.levelTag,
-                        { backgroundColor: getLevelColor(skill.level) },
-                      ]}
+              {grouped[key].map((skill) => (
+                <View
+                  key={skill.id}
+                  style={[
+                    styles.card,
+                    {
+                      backgroundColor: Colors.card,
+                      borderColor: Colors.border,
+                    },
+                  ]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[styles.skillName, { color: Colors.textDark }]}
                     >
-                      <Text style={styles.levelText}>
-                        {getLevelText(skill.level)}
+                      {skill.name}
+                    </Text>
+
+                    <View style={styles.tagRow}>
+                      <View
+                        style={[
+                          styles.levelTag,
+                          { backgroundColor: getLevelColor(skill.level) },
+                        ]}
+                      >
+                        <Text style={styles.levelText}>
+                          {getLevelText(skill.level)}
+                        </Text>
+                      </View>
+
+                      <Text
+                        style={[styles.timestamp, { color: Colors.textLight }]}
+                      >
+                        Updated {new Date(skill.lastUpdated).toDateString()}
                       </Text>
                     </View>
-                    <Text
-                      style={[styles.timestamp, { color: Colors.textLight }]}
+                  </View>
+
+                  <View style={styles.actionsCol}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("UpdateSkill", { skill })
+                      }
                     >
-                      Updated {new Date(skill.lastUpdated).toDateString()}
-                    </Text>
+                      <Feather name="edit" size={22} color={Colors.primary} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => deleteSkill(skill.id)}
+                      style={{ marginTop: 14 }}
+                    >
+                      <Feather name="trash-2" size={22} color={Colors.danger} />
+                    </TouchableOpacity>
                   </View>
                 </View>
-
-                <View style={styles.actionsCol}>
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate("UpdateSkill", { skill })
-                    }
-                  >
-                    <Feather name="edit" size={22} color={Colors.primary} />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => deleteSkill(skill.id)}
-                    style={{ marginTop: 12 }}
-                  >
-                    <Feather name="trash-2" size={22} color={Colors.danger} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
-        );
-      })}
+              ))}
+            </View>
+          );
+        })}
+      </Animated.View>
     </ScrollView>
   );
 }
 
+/* ---------------------------- STYLES ---------------------------- */
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 70 },
+  container: { flex: 1, padding: 22, paddingTop: 70 },
+
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 18,
+    marginBottom: 22,
   },
-  title: { fontSize: 28, fontWeight: "700" },
+  title: { fontSize: 30, fontWeight: "700" },
   empty: { textAlign: "center", marginTop: 30, fontSize: 15 },
 
-  categoryBlock: { marginBottom: 18 },
-  categoryTitle: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  categoryBlock: { marginBottom: 22 },
+  categoryTitle: { fontSize: 15, fontWeight: "600", marginBottom: 10 },
 
   card: {
-    borderRadius: 16,
     borderWidth: 1,
-    padding: 16,
-    marginBottom: 10,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 12,
     flexDirection: "row",
   },
   skillName: { fontSize: 18, fontWeight: "700" },
@@ -221,6 +247,6 @@ const styles = StyleSheet.create({
   actionsCol: {
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: 12,
+    marginLeft: 14,
   },
 });
