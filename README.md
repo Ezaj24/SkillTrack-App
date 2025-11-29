@@ -83,3 +83,32 @@ Start development server:
 npx expo start
 
 Open in Expo Go on your phone
+
+
+🌐 API Base URL
+Configured inside:
+
+Code
+src/api/api.js
+Endpoints
+/api/auth/login
+
+/api/auth/register
+
+/api/user/me
+
+/api/user/update
+
+/api/skills (CRUD)
+
+/api/goals (CRUD)
+
+📝 Notes
+Built for portfolio and real learning
+
+UI is clean, minimal, and responsive
+
+Version 1 is complete and stable
+
+📊 Project Status
+SkillTrack v1 is finished. Future improvements may include animations, onboarding, charts, or reminders.
