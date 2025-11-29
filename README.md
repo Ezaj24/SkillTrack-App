@@ -71,6 +71,41 @@ App.js # main entry app.json # Expo configuration
 
 ---
 
+
+## 📸 App Screenshots
+
+### 🟦 Dark Mode
+
+#### Home Screen
+![Home Screen – Dark](assets/screens/home-dark.jpg)
+
+#### Skills Screen
+![Skills Screen – Dark](assets/screens/skills-dark.jpg)
+
+#### Goals Screen
+![Goals Screen – Dark](assets/screens/goals-dark.jpg)
+
+#### Profile Screen
+![Profile Screen – Dark](assets/screens/profile-dark.jpg)
+
+---
+
+### ⚪ Light Mode
+
+#### Home Screen
+![Home Screen – Light](assets/screens/home-light.jpg)
+
+#### Profile Screen
+![Profile Screen – Light](assets/screens/profile-light.jpg)
+
+---
+
+### 🔐 Authentication
+
+#### Login Screen
+![Login Screen](assets/screens/login.jpg)
+
+
 ## 🚀 Running the App
 
 Install dependencies:
