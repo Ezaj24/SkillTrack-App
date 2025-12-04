@@ -109,7 +109,7 @@ App.js # main entry app.json # Expo configuration
 ## 🚀 Running the App
 
 Install dependencies:
-```bash
+``bash
 npm install
 
 Start development server:
