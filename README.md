@@ -146,4 +146,4 @@ UI is clean, minimal, and responsive
 Version 1 is complete and stable
 
 📊 Project Status
-SkillTrack v1 is finished. Future improvements may include animations, onboarding, charts, or reminders..
+SkillTrack v1 is finished. Future improvements may include animations, onboarding, charts, or reminders.
